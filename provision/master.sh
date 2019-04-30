@@ -11,7 +11,7 @@ rm -fr /var/cache/yum/*
 /usr/bin/yum -y install puppetserver
 
 # configure Hiera
-cat > /var/tmp/configure_hiera.pp << 'EOF'
+cat > /var/tmp/configure_hiera.pp << 'EOF'
 class { 'hiera':
   hiera_version   => '5',
   hiera5_defaults => { "datadir" => "data", "data_hash" => "yaml_data"},
@@ -65,6 +65,10 @@ EOF
 # Stop and disable iptables
   /bin/systemctl stop firewalld.service
   /bin/systemctl disable firewalld.service
+  /bin/systemctl stop iptables.service
+  /bin/systemctl disable iptables.service
+  /bin/systemctl stop ip6tables.service
+  /bin/systemctl disable ip6tables
 
 # Do initial Puppet Run
 /opt/puppetlabs/puppet/bin/puppet agent -t --server=master.puppet.vm
