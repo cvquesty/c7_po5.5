@@ -1,21 +1,19 @@
 #!/bin/bash
 
-# Turn off the Firewall and Disable it
-/sbin/service iptables stop
-/sbin/chkconfig iptables off
-/sbin/service ip6tables stop
-/sbin/chkconfig ip6tables off
+# Stop and disable firewalld
+  /bin/systemctl stop  firewalld.service
+  /bin/systemctl disable firewalld.service
 
 # Install Puppet Labs Official Repository for CentOS 7
   /bin/rpm -Uvh https://yum.puppetlabs.com/puppet5/puppet5-release-el-6.noarch.rpm
 
 # Install Puppet Server Components and Support Packages
 /usr/bin/yum -y install puppet-agent
-/sbin/service puppet start
-/sbin/chkconfig puppet on
+/bin/systemctl start puppet
+/bin/systemctl enable puppet
 
 # Restart Networking to Pick Up New IP
-/sbin/service network restart
+/bin/systemctl restart network
 
 # Create a puppet.conf
 cat >> /etc/puppetlabs/puppet/puppet.conf << 'EOF'

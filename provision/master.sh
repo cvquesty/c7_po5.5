@@ -10,14 +10,27 @@ rm -fr /var/cache/yum/*
 # Install Puppet Server Components and Support Packages
 /usr/bin/yum -y install puppetserver
 
-# Remove the global Hiera.yaml
-rm -f /etc/puppetlabs/puppet/hiera.yaml
+# configure Hiera
+cat > /var/tmp/configure_hiera.pp << 'EOF'
+class { 'hiera':
+  hiera_version   => '5',
+  hiera5_defaults => { "datadir" => "data", "data_hash" => "yaml_data"},
+  hierarchy  => [
+    {"name" => "Nodes" => "nodes/%{trusted_certname}.yaml"},
+    {"name" => "Environments" => "environments/%{::environment}.yaml"},
+    {"name" => "Common Defaults" => "common.yaml"},
+  ],
+}
+EOF
+
+# Then Configure Hiera
+  /opt/puppetlabs/puppet/bin/puppet apply /var/tmp/configure_hiera.pp
 
 # Start and Enable the Puppet Master
-/sbin/service puppetserver start
-/sbin/chkconfig puppetserver on
-/sbin/service puppet start
-/sbin/chkconfig puppet on
+/bin/systemctl start puppetserver
+/bin/systemctl enable puppetserver
+/bin/systemctl start puppet
+/bin/systemctl enable puppet
 
 # Install Git
 /usr/bin/yum -y install git
@@ -47,13 +60,11 @@ EOF
 /opt/puppetlabs/puppet/bin/puppet apply -e "include puppetdb::master::config" --h  ttp_connect_timeout=5m || true
 
 # Bounce the network to trade out the Virtualbox IP
-/sbin/service network restart
+/bin/systemctl restart network
 
-# Turn off the Firewall for this infrastructure
-/sbin/service iptables stop
-/sbin/service ip6tables stop
-/sbin/chkconfig iptables off
-/sbin/chkconfig ip6tables off
+# Stop and disable iptables
+  /bin/systemctl stop firewalld.service
+  /bin/systemctl disable firewalld.service
 
 # Do initial Puppet Run
 /opt/puppetlabs/puppet/bin/puppet agent -t --server=master.puppet.vm
