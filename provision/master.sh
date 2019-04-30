@@ -79,7 +79,7 @@ class { 'r10k':
   version => '3.1.1',
   sources => {
     'puppet' => {
-      'remote'  => 'https://github.com/cvquesty/dg_control-repo.git',
+      'remote'  => 'https://github.com/cvquesty/dg_control_repo.git',
       'basedir' => "${::settings::codedir}/environments",
       'prefix'  => false,
     }
